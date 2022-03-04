@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { WalletMultiButton } from 'solana-wallets-vue'
+import { WalletMultiButton } from 'solana-wallets-vue';
+import CreateNft from './components/CreateNft.vue';
 </script>
 
 <template>
@@ -9,7 +10,7 @@ import { WalletMultiButton } from 'solana-wallets-vue'
         </div>
         <div class="flex h-screen">
             <div class="m-auto">
-                gm
+                <create-nft></create-nft>
             </div>
         </div>
     </div>
