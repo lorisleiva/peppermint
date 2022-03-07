@@ -16,8 +16,7 @@ const metaplex = computed(() => {
 });
 
 const onCreateNft = async () => {
-    const nfts = new NftClient(metaplex.value);
-    const nft = await nfts.createNft({
+    const nft = await metaplex.value.nfts().createNft({
         name: 'Mx Test Solflake',
         uri: 'https://arweave.net/b86yUxzuaJCH9NgivDPnpiW1LdSFOmesNV6hXO1JFrM',
     });
