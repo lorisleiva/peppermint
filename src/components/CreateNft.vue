@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Metaplex, WalletAdapterIdentityDriver, GuestIdentityDriver } from '@metaplex/js-next';
+import { Metaplex, WalletAdapterIdentityDriver, GuestIdentityDriver, NftClient } from '@metaplex/js-next';
 import { clusterApiUrl, Connection } from '@solana/web3.js';
 import { useWallet } from 'solana-wallets-vue';
 import { computed } from 'vue';
@@ -14,10 +14,19 @@ const metaplex = computed(() => {
 
     return mx.setIdentity(identity);
 });
+
+const onCreateNft = async () => {
+    const nfts = new NftClient(metaplex.value);
+    const nft = await nfts.createNft({
+        name: 'Mx Test Solflake',
+        uri: 'https://arweave.net/b86yUxzuaJCH9NgivDPnpiW1LdSFOmesNV6hXO1JFrM',
+    });
+    console.log(nft);
+}
 </script>
 
 <template>
     <div>
-        Create NFT
+        <button @click="onCreateNft">Create NFT</button>
     </div>
 </template>
