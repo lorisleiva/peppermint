@@ -4,12 +4,12 @@ import CreateNft from './components/CreateNft.vue';
 </script>
 
 <template>
-    <div>
+    <div class="bg-cover bg-center bg-[url('/gradient.jpg')] font-mono">
         <div class="absolute top-0 right-0 m-8">
-            <wallet-multi-button></wallet-multi-button>
+            <wallet-multi-button dark></wallet-multi-button>
         </div>
-        <div class="flex h-screen">
-            <div class="m-auto">
+        <div class="flex h-screen w-screen">
+            <div class="m-auto w-full max-w-2xl">
                 <create-nft></create-nft>
             </div>
         </div>
