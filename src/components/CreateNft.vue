@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Metaplex, WalletAdapterIdentityDriver, GuestIdentityDriver } from '@metaplex/js-next';
+import { Metaplex, WalletAdapterIdentityDriver, GuestIdentityDriver, MetaplexFile } from '@metaplex/js-next';
 import { clusterApiUrl, Connection } from '@solana/web3.js';
 import { useWallet } from 'solana-wallets-vue';
 
@@ -25,8 +25,12 @@ const onFileChange = async (event: Event) => {
     if (!files?.length) return;
     image.value = files[0];
     imageSrc.value = URL.createObjectURL(image.value);
-    const buffer = await image.value.arrayBuffer();
-    console.log(image.value, imageSrc.value, buffer);
+    const mxFile = new MetaplexFile(await image.value.arrayBuffer());
+    console.log(image.value, imageSrc.value, mxFile);
+    const price = await metaplex.value.storage().getPrice(mxFile);
+    console.log(price);
+    const url = await metaplex.value.storage().upload(mxFile);
+    console.log(url);
 };
 
 const onCreateNft = async () => {
