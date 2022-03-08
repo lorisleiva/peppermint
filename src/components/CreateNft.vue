@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { Metaplex, WalletAdapterIdentityDriver, GuestIdentityDriver, MetaplexFile } from '@metaplex/js-next';
-import { clusterApiUrl, Connection } from '@solana/web3.js';
 import { useWallet } from 'solana-wallets-vue';
+
+// const endpoint = 'https://ssc-dao.genesysgo.net';
+const endpoint = 'https://psytrbhymqlkfrhudd.dev.genesysgo.net:8899';
 
 // Initialize workspace.
 const { wallet } = useWallet();
-const connection = new Connection(clusterApiUrl('devnet'));
 const metaplex = computed(() => {
-    const mx = Metaplex.make(connection);
+    const mx = Metaplex.make(endpoint);
     const identity = wallet.value
         ? new WalletAdapterIdentityDriver(mx, wallet.value)
         : new GuestIdentityDriver(mx);
@@ -62,6 +63,6 @@ const onCreateNft = async () => {
             <input type="file" @change="onFileChange" class="absolute inset-0 z-50 m-0 p-0 w-full h-full outline-none opacity-0 cursor-pointer">
         </div>
         <img v-if="imageSrc" :src="imageSrc" alt="Image to upload as an NFT">
-        <button @click="onCreateNft">Create NFT</button>
+        <!-- <button @click="onCreateNft">Create NFT</button> -->
     </div>
 </template>
