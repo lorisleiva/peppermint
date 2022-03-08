@@ -18,29 +18,36 @@ const metaplex = computed(() => {
     return mx.setIdentity(identity);
 });
 
-// Image upload.
-const image = ref<File>();
+// Select image.
+const image = ref<MetaplexFile>();
 const imageSrc = ref<string>();
 const imagePrice = ref<number>();
 const onFileChange = async (event: Event) => {
     const files = (event.target as HTMLInputElement).files
         || (event as InputEvent).dataTransfer?.files;
     if (!files?.length) return;
-    image.value = files[0];
-    imageSrc.value = URL.createObjectURL(image.value);
-    const mxFile = new MetaplexFile(await image.value.arrayBuffer());
-    const price = await metaplex.value.storage().getPrice(mxFile);
+    image.value = new MetaplexFile(await files[0].arrayBuffer());
+    imageSrc.value = URL.createObjectURL(files[0]);
+    const price = await metaplex.value.storage().getPrice(image.value);
     imagePrice.value = price.toNumber() / LAMPORTS_PER_SOL;
-    // const url = await metaplex.value.storage().upload(mxFile);
-    // console.log(url);
 };
 
+// Upload image and create NFT.
+const loading = ref(false);
 const onCreateNft = async () => {
-    const nft = await metaplex.value.nfts().createNft({
-        name: 'Mx Test Solflake',
-        uri: 'https://arweave.net/b86yUxzuaJCH9NgivDPnpiW1LdSFOmesNV6hXO1JFrM',
-    });
-    console.log(nft);
+    if (!image.value || loading.value) return;
+    try {
+        loading.value = true;
+        const url = await metaplex.value.storage().upload(image.value);
+        console.log(url);
+        const nft = await metaplex.value.nfts().createNft({
+            name: 'Mx Test Solflake',
+            uri: 'https://arweave.net/b86yUxzuaJCH9NgivDPnpiW1LdSFOmesNV6hXO1JFrM',
+        });
+        console.log(nft);
+    } finally {
+        loading.value = false;
+    }
 }
 </script>
 
@@ -82,7 +89,18 @@ const onCreateNft = async () => {
                     <input id="nft-description" type="text" class="block w-full bg-indigo-900/50 rounded px-4 py-2 text-xl font-bold border-b-2 border-transparent focus:outline-none focus:border-white focus:text-white">
                 </div>
 
-                <button @click="onCreateNft" class="block w-full px-4 py-2 text-center text-semibold bg-gradient-to-br from-indigo-700 to-blue-600 rounded border-b-2 border-transparent focus:outline-none focus:border-white hover:border-white hover:text-white">Create NFT</button>
+                <button @click="onCreateNft" :disabled="loading" :class="loading ? 'cursor-not-allowed' : 'focus:outline-none focus:border-white hover:border-white hover:text-white'" class="block w-full px-4 py-2 text-center text-semibold bg-gradient-to-br from-indigo-700 to-blue-600 rounded border-b-2 border-transparent">
+                    <span v-if="loading" class="flex justify-center items-center space-x-2">
+                        <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Loading</span>
+                    </span>
+                    <span v-else>
+                        Create NFT
+                    </span>
+                </button>
             </div>
         </div>
     </div>
