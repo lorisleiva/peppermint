@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import { Metaplex, WalletAdapterIdentityDriver, GuestIdentityDriver, MetaplexFile } from '@metaplex/js-next';
 import { useWallet } from 'solana-wallets-vue';
+import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 
 // const endpoint = 'https://ssc-dao.genesysgo.net';
 const endpoint = 'https://psytrbhymqlkfrhudd.dev.genesysgo.net:8899';
@@ -20,6 +21,7 @@ const metaplex = computed(() => {
 // Image upload.
 const image = ref<File>();
 const imageSrc = ref<string>();
+const imagePrice = ref<number>();
 const onFileChange = async (event: Event) => {
     const files = (event.target as HTMLInputElement).files
         || (event as InputEvent).dataTransfer?.files;
@@ -27,9 +29,8 @@ const onFileChange = async (event: Event) => {
     image.value = files[0];
     imageSrc.value = URL.createObjectURL(image.value);
     const mxFile = new MetaplexFile(await image.value.arrayBuffer());
-    console.log(image.value, imageSrc.value, mxFile);
     const price = await metaplex.value.storage().getPrice(mxFile);
-    console.log(price);
+    imagePrice.value = price.toNumber() / LAMPORTS_PER_SOL;
     // const url = await metaplex.value.storage().upload(mxFile);
     // console.log(url);
 };
@@ -65,7 +66,12 @@ const onCreateNft = async () => {
         </div>
 
         <div v-else class="flex">
-            <img :src="imageSrc" alt="Image to upload as an NFT" class="object-cover w-1/3 rounded-l-2xl border-r border-indigo-500">
+            <div class="relative w-2/5">
+                <img :src="imageSrc" alt="Image to upload as an NFT" class="object-cover w-full h-full rounded-l-2xl border-r border-indigo-500">
+                <div class="absolute bottom-4 right-4 rounded px-2 py-1 bg-white/80 backdrop-blur shadow text-xs text-black">
+                    <span class="font-sans">◎</span> {{ imagePrice }}
+                </div>
+            </div>
             <div class="flex-1 p-8 space-y-8">
                 <div>
                     <label for="nft-name" class="text-xs text-indigo-200 uppercase font-medium tracking-widest">Name</label>
