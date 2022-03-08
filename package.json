@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@bundlr-network/client": "^0.5.18",
+    "@lorisleiva/js-next-alpha": "^0.1.2",
     "@solana/wallet-adapter-wallets": "^0.15.5",
     "@solana/web3.js": "^1.36.0",
     "solana-wallets-vue": "^0.3.2",

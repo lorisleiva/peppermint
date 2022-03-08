@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Metaplex, WalletAdapterIdentityDriver, GuestIdentityDriver, MetaplexFile } from '@metaplex/js-next';
+import { Metaplex, WalletAdapterIdentityDriver, GuestIdentityDriver, MetaplexFile } from '@lorisleiva/js-next-alpha';
 import { useWallet } from 'solana-wallets-vue';
 import { LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { BundlrStorageDriver } from '../BundlrStorageDriver';
 
 // const endpoint = 'https://ssc-dao.genesysgo.net';
 const endpoint = 'https://psytrbhymqlkfrhudd.dev.genesysgo.net:8899';
@@ -15,7 +16,9 @@ const metaplex = computed(() => {
         ? new WalletAdapterIdentityDriver(mx, wallet.value)
         : new GuestIdentityDriver(mx);
 
-    return mx.setIdentity(identity);
+    return mx
+        .setIdentity(identity)
+        .setStorage(new BundlrStorageDriver(mx));
 });
 
 // Select image.
