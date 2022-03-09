@@ -1,25 +1,19 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Metaplex, WalletAdapterIdentityDriver, GuestIdentityDriver, MetaplexFile } from '@lorisleiva/js-next-alpha';
+import { Metaplex, walletOrGuestIdentity, MetaplexFile } from '@lorisleiva/js-next-alpha';
 import { useWallet } from 'solana-wallets-vue';
 import { LAMPORTS_PER_SOL } from '@solana/web3.js';
-import { BundlrStorageDriver } from '../BundlrStorageDriver';
+import { bundlrStorage } from '../BundlrStorageDriver';
 
 // const endpoint = 'https://ssc-dao.genesysgo.net';
 const endpoint = 'https://psytrbhymqlkfrhudd.dev.genesysgo.net:8899';
 
 // Initialize workspace.
 const { wallet } = useWallet();
-const metaplex = computed(() => {
-    const mx = Metaplex.make(endpoint);
-    const identity = wallet.value
-        ? new WalletAdapterIdentityDriver(mx, wallet.value)
-        : new GuestIdentityDriver(mx);
-
-    return mx
-        .setIdentity(identity)
-        .setStorage(new BundlrStorageDriver(mx));
-});
+const metaplex = computed(() => Metaplex.make(endpoint)
+    .setIdentity(walletOrGuestIdentity(wallet.value))
+    .setStorage(bundlrStorage())
+);
 
 // Select image.
 const image = ref<MetaplexFile>();
