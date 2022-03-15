@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Metaplex, walletOrGuestIdentity, MetaplexFile } from '@lorisleiva/js-next-alpha';
+import { Metaplex, walletOrGuestIdentity, MetaplexFile, mockStorage } from '@lorisleiva/js-next-alpha';
 import { useWallet } from 'solana-wallets-vue';
 import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { bundlrStorage } from '../BundlrStorageDriver';
@@ -12,7 +12,7 @@ const endpoint = 'https://psytrbhymqlkfrhudd.dev.genesysgo.net:8899';
 const { wallet } = useWallet();
 const metaplex = computed(() => Metaplex.make(endpoint)
     .setIdentity(walletOrGuestIdentity(wallet.value))
-    .setStorage(bundlrStorage())
+    .setStorage(mockStorage())
 );
 
 // Select image.
