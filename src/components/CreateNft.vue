@@ -6,13 +6,18 @@ import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { bundlrStorage } from '../BundlrStorageDriver';
 
 // const endpoint = 'https://ssc-dao.genesysgo.net';
-const endpoint = 'https://psytrbhymqlkfrhudd.dev.genesysgo.net:8899';
+// const endpoint = 'https://psytrbhymqlkfrhudd.dev.genesysgo.net:8899';
+const endpoint = 'https://metaplex.devnet.rpcpool.com';
 
 // Initialize workspace.
 const { wallet } = useWallet();
 const metaplex = computed(() => Metaplex.make(endpoint)
     .setIdentity(walletOrGuestIdentity(wallet.value))
-    .setStorage(mockStorage())
+    .setStorage(bundlrStorage({
+        address: 'https://devnet.bundlr.network',
+        providerUrl: endpoint,
+        timeout: 60000,
+    }))
 );
 
 // Select image.
