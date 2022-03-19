@@ -13,6 +13,7 @@
     "@solana/spl-token": "^0.2.0",
     "@solana/wallet-adapter-wallets": "^0.15.5",
     "@solana/web3.js": "^1.36.0",
+    "rollup-plugin-node-polyfills": "^0.2.1",
     "solana-wallets-vue": "^0.3.2",
     "vue": "^3.2.25"
   },

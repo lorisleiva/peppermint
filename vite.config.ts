@@ -5,6 +5,11 @@ import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfil
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [vue()],
+  resolve: {
+    alias: {
+      stream: 'rollup-plugin-node-polyfills/polyfills/stream',
+    }
+  },
   define: {
     'process.env': process.env ?? {},
   },
@@ -20,7 +25,7 @@ export default defineConfig({
       // Enable esbuild polyfill plugins
       plugins: [
         NodeGlobalsPolyfillPlugin({
-          buffer: true
+          buffer: true,
         })
       ]
     }
