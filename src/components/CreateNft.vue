@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Metaplex, walletOrGuestIdentity, MetaplexFile, mockStorage } from '@lorisleiva/js-next-alpha';
+import { Metaplex, walletOrGuestIdentity, MetaplexFile, bundlrStorage } from '@lorisleiva/js-next-alpha';
 import { useWallet } from 'solana-wallets-vue';
 import { LAMPORTS_PER_SOL } from '@solana/web3.js';
-import { bundlrStorage } from '../BundlrStorageDriver';
 
 // Initialize workspace.
 const endpoint = 'https://metaplex.devnet.rpcpool.com';
