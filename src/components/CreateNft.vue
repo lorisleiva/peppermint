@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Metaplex, walletOrGuestIdentity, MetaplexFile, bundlrStorage } from '@lorisleiva/js-next-alpha';
+import { Metaplex, walletOrGuestIdentity, MetaplexFile, bundlrStorage, Nft } from '@lorisleiva/js-next-alpha';
 import { useWallet } from 'solana-wallets-vue';
 import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 
@@ -15,6 +15,11 @@ const metaplex = computed(() => Metaplex.make(endpoint)
     }))
 );
 
+// Inputs.
+const name = ref<string>('');
+const description = ref<string>('');
+const collection = ref<string>('');
+
 // Select image.
 const image = ref<MetaplexFile>();
 const imageSrc = ref<string>();
@@ -27,25 +32,29 @@ const onFileChange = async (event: Event) => {
     imageSrc.value = URL.createObjectURL(files[0]);
     const price = await metaplex.value.storage().getPrice(image.value);
     imagePrice.value = price.toNumber() / LAMPORTS_PER_SOL;
-    console.log(image.value);
+    name.value = image.value.displayName;
 };
 
 // Upload image and create NFT.
 const loading = ref(false);
+const nft = ref<Nft | null>(null);
 const onCreateNft = async () => {
     if (!image.value || loading.value) return;
     try {
         loading.value = true;
         const url = await metaplex.value.storage().upload(image.value);
-        console.log(url);
-        const nft = await metaplex.value.nfts().createNft({
-            name: 'Mx Test Solflake',
+        nft.value = await metaplex.value.nfts().createNft({
+            name: name.value,
             json: {
-                description: 'My Test Description',
+                name: name.value,
+                description: description.value,
                 image: url,
+                collection: {
+                    name: collection.value,
+                    family: collection.value,
+                },
             },
         });
-        console.log(nft);
     } finally {
         loading.value = false;
     }
@@ -73,7 +82,7 @@ const onCreateNft = async () => {
             <input type="file" @change="onFileChange" class="absolute inset-0 z-50 m-0 p-0 w-full h-full outline-none opacity-0 cursor-pointer">
         </div>
 
-        <div v-else class="flex">
+        <div v-else-if="!nft" class="flex">
             <div class="relative w-2/5">
                 <img :src="imageSrc" alt="Image to upload as an NFT" class="object-cover w-full h-full rounded-l-2xl border-r border-indigo-500">
                 <div class="absolute bottom-4 right-4 rounded px-2 py-1 bg-white/80 backdrop-blur shadow text-xs text-black">
@@ -83,11 +92,15 @@ const onCreateNft = async () => {
             <div class="flex-1 p-8 space-y-8">
                 <div>
                     <label for="nft-name" class="text-xs text-indigo-200 uppercase font-medium tracking-widest">Name</label>
-                    <input id="nft-name" type="text" class="block w-full bg-indigo-900/50 rounded px-4 py-2 text-xl font-bold border-b-2 border-transparent focus:outline-none focus:border-white focus:text-white">
+                    <input v-model="name" id="nft-name" type="text" class="block w-full bg-indigo-900/50 rounded px-4 py-2 text-xl font-bold border-b-2 border-transparent focus:outline-none focus:border-white focus:text-white">
                 </div>
                 <div>
                     <label for="nft-description" class="text-xs text-indigo-200 uppercase font-medium tracking-widest">Description</label>
-                    <input id="nft-description" type="text" class="block w-full bg-indigo-900/50 rounded px-4 py-2 text-xl font-bold border-b-2 border-transparent focus:outline-none focus:border-white focus:text-white">
+                    <input v-model="description" id="nft-description" type="text" class="block w-full bg-indigo-900/50 rounded px-4 py-2 text-xl font-bold border-b-2 border-transparent focus:outline-none focus:border-white focus:text-white">
+                </div>
+                <div>
+                    <label for="nft-collection" class="text-xs text-indigo-200 uppercase font-medium tracking-widest">Collection</label>
+                    <input v-model="collection" id="nft-collection" type="text" class="block w-full bg-indigo-900/50 rounded px-4 py-2 text-xl font-bold border-b-2 border-transparent focus:outline-none focus:border-white focus:text-white">
                 </div>
 
                 <button @click="onCreateNft" :disabled="loading" :class="loading ? 'cursor-not-allowed' : 'focus:outline-none focus:border-white hover:border-white hover:text-white'" class="block w-full px-4 py-2 text-center text-semibold bg-gradient-to-br from-indigo-700 to-blue-600 rounded border-b-2 border-transparent">
@@ -102,6 +115,33 @@ const onCreateNft = async () => {
                         Create NFT
                     </span>
                 </button>
+            </div>
+        </div>
+
+        <div v-else class="flex">
+            <div class="relative w-2/5">
+                <img :src="nft.json?.image" :alt="nft.json?.name" class="object-cover w-full h-full rounded-l-2xl border-r border-indigo-500">
+                <div class="absolute bottom-4 right-4 rounded px-2 py-1 bg-white/80 backdrop-blur shadow text-xs text-green-700">
+                    <span class="font-sans text-green-600 font-bold">✓</span> Minted
+                </div>
+            </div>
+            <div class="flex-1 p-8 space-y-8">
+                <div>
+                    <label class="text-xs text-indigo-200 uppercase font-medium tracking-widest">Mint address</label>
+                    <p v-text="nft.mint"></p>
+                </div>
+                <div>
+                    <label class="text-xs text-indigo-200 uppercase font-medium tracking-widest">Name</label>
+                    <p v-text="nft.name"></p>
+                </div>
+                <div>
+                    <label class="text-xs text-indigo-200 uppercase font-medium tracking-widest">Description</label>
+                    <p v-text="nft.json?.description"></p>
+                </div>
+                <div>
+                    <label class="text-xs text-indigo-200 uppercase font-medium tracking-widest">Collection</label>
+                    <p v-text="nft.json?.collection?.name"></p>
+                </div>
             </div>
         </div>
     </div>

@@ -9,7 +9,7 @@ import CreateNft from './components/CreateNft.vue';
             <wallet-multi-button dark></wallet-multi-button>
         </div>
         <div class="flex h-screen w-screen">
-            <div class="m-auto w-full max-w-2xl">
+            <div class="m-auto w-full max-w-3xl">
                 <create-nft></create-nft>
             </div>
         </div>
