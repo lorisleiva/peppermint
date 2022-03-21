@@ -18,6 +18,8 @@
   },
   "devDependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.1.1",
+    "@types/keccak": "^3.0.1",
+    "@types/readable-stream": "^2.3.13",
     "@vitejs/plugin-vue": "^2.2.0",
     "autoprefixer": "^10.4.2",
     "crypto-browserify": "^3.12.0",
