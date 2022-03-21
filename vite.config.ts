@@ -8,6 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       stream: 'rollup-plugin-node-polyfills/polyfills/stream',
+      crypto: 'crypto-browserify',
     }
   },
   define: {
