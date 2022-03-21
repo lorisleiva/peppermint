@@ -23,7 +23,7 @@ const onFileChange = async (event: Event) => {
     const files = (event.target as HTMLInputElement).files
         || (event as InputEvent).dataTransfer?.files;
     if (!files?.length) return;
-    image.value = new MetaplexFile(await files[0].arrayBuffer());
+    image.value = await MetaplexFile.fromFile(files[0]);
     imageSrc.value = URL.createObjectURL(files[0]);
     const price = await metaplex.value.storage().getPrice(image.value);
     imagePrice.value = price.toNumber() / LAMPORTS_PER_SOL;
