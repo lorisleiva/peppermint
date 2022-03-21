@@ -5,17 +5,13 @@ import { useWallet } from 'solana-wallets-vue';
 import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { bundlrStorage } from '../BundlrStorageDriver';
 
-// const endpoint = 'https://ssc-dao.genesysgo.net';
-// const endpoint = 'https://psytrbhymqlkfrhudd.dev.genesysgo.net:8899';
-const endpoint = 'https://metaplex.devnet.rpcpool.com';
-
 // Initialize workspace.
+const endpoint = 'https://metaplex.devnet.rpcpool.com';
 const { wallet } = useWallet();
 const metaplex = computed(() => Metaplex.make(endpoint)
     .setIdentity(walletOrGuestIdentity(wallet.value))
     .setStorage(bundlrStorage({
         address: 'https://devnet.bundlr.network',
-        providerUrl: endpoint,
         timeout: 60000,
     }))
 );
@@ -44,7 +40,10 @@ const onCreateNft = async () => {
         console.log(url);
         const nft = await metaplex.value.nfts().createNft({
             name: 'Mx Test Solflake',
-            uri: 'https://arweave.net/b86yUxzuaJCH9NgivDPnpiW1LdSFOmesNV6hXO1JFrM',
+            json: {
+                description: 'My Test Description',
+                image: url,
+            },
         });
         console.log(nft);
     } finally {
