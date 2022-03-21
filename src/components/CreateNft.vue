@@ -27,6 +27,7 @@ const onFileChange = async (event: Event) => {
     imageSrc.value = URL.createObjectURL(files[0]);
     const price = await metaplex.value.storage().getPrice(image.value);
     imagePrice.value = price.toNumber() / LAMPORTS_PER_SOL;
+    console.log(image.value);
 };
 
 // Upload image and create NFT.
