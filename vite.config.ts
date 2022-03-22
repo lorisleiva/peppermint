@@ -31,10 +31,8 @@ export default defineConfig({
       },
       // Enable esbuild polyfill plugins
       plugins: [
-        NodeGlobalsPolyfillPlugin({
-          buffer: true,
-        })
-      ]
+        NodeGlobalsPolyfillPlugin({ buffer: true }),
+      ],
     }
   }
 })
