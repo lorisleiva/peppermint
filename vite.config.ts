@@ -13,9 +13,9 @@ export default defineConfig({
     },
     dedupe: [
       '@bundlr-network/client',
+      '@metaplex-foundation/beet',
       'tweetnacl',
       'brorand',
-      '@metaplex-foundation/beet',
     ],
   },
   define: {
@@ -30,7 +30,6 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    // exclude: ['@lorisleiva/js-next-alpha'],
     esbuildOptions: {
       plugins: [
         NodeGlobalsPolyfillPlugin({ buffer: true }),
