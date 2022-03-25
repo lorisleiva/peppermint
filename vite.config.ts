@@ -10,7 +10,13 @@ export default defineConfig({
     alias: {
       stream: 'rollup-plugin-node-polyfills/polyfills/stream',
       crypto: 'crypto-browserify',
-    }
+    },
+    dedupe: [
+      '@bundlr-network/client',
+      'tweetnacl',
+      'brorand',
+      '@metaplex-foundation/beet',
+    ],
   },
   define: {
     'process.env': process.env ?? {},
