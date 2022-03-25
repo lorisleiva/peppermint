@@ -43,9 +43,9 @@ const onCreateNft = async () => {
     try {
         loading.value = true;
         const url = await metaplex.value.storage().upload(image.value);
-        nft.value = await metaplex.value.nfts().createNft({
+        const result = await metaplex.value.nfts().createNft({
             name: name.value,
-            json: {
+            metadata: {
                 name: name.value,
                 description: description.value,
                 image: url,
@@ -55,6 +55,7 @@ const onCreateNft = async () => {
                 },
             },
         });
+        nft.value = result.nft;
     } finally {
         loading.value = false;
     }
@@ -120,7 +121,7 @@ const onCreateNft = async () => {
 
         <div v-else class="flex">
             <div class="relative w-2/5">
-                <img :src="nft.json?.image" :alt="nft.json?.name" class="object-cover w-full h-full rounded-l-2xl border-r border-indigo-500">
+                <img :src="nft.metadata?.image" :alt="nft.metadata?.name" class="object-cover w-full h-full rounded-l-2xl border-r border-indigo-500">
                 <div class="absolute bottom-4 right-4 rounded px-2 py-1 bg-white/80 backdrop-blur shadow text-xs text-green-700">
                     <span class="font-sans text-green-600 font-bold">✓</span> Minted
                 </div>
@@ -136,11 +137,11 @@ const onCreateNft = async () => {
                 </div>
                 <div>
                     <label class="text-xs text-indigo-200 uppercase font-medium tracking-widest">Description</label>
-                    <p v-text="nft.json?.description"></p>
+                    <p v-text="nft.metadata?.description"></p>
                 </div>
                 <div>
                     <label class="text-xs text-indigo-200 uppercase font-medium tracking-widest">Collection</label>
-                    <p v-text="nft.json?.collection?.name"></p>
+                    <p v-text="nft.metadata?.collection?.name"></p>
                 </div>
             </div>
         </div>

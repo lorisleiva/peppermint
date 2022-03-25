@@ -24,15 +24,11 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
+    // exclude: ['@lorisleiva/js-next-alpha'],
     esbuildOptions: {
-      // Node.js global to browser globalThis
-      define: {
-        global: 'globalThis'
-      },
-      // Enable esbuild polyfill plugins
       plugins: [
         NodeGlobalsPolyfillPlugin({ buffer: true }),
       ],
     }
-  }
+  },
 })
