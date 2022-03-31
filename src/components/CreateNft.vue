@@ -8,8 +8,8 @@ import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 const endpoint = 'https://metaplex.devnet.rpcpool.com';
 const { wallet } = useWallet();
 const metaplex = computed(() => Metaplex.make(endpoint)
-    .setIdentity(walletOrGuestIdentity(wallet.value))
-    .setStorage(bundlrStorage({
+    .use(walletOrGuestIdentity(wallet.value))
+    .use(bundlrStorage({
         address: 'https://devnet.bundlr.network',
         timeout: 60000,
     }))
