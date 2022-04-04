@@ -42,18 +42,18 @@ const onCreateNft = async () => {
     if (!image.value || loading.value) return;
     try {
         loading.value = true;
-        const url = await metaplex.value.storage().upload(image.value);
-        const result = await metaplex.value.nfts().createNft({
+        const { uri } = await metaplex.value.nfts().uploadMetadata({
             name: name.value,
-            metadata: {
-                name: name.value,
-                description: description.value,
-                image: url,
-                collection: {
-                    name: collection.value,
-                    family: collection.value,
-                },
+            description: description.value,
+            image: image.value,
+            collection: {
+                name: collection.value,
+                family: collection.value,
             },
+        });
+        const result = await metaplex.value.nfts().createNft({
+            uri,
+            name: name.value,
         });
         nft.value = result.nft;
     } finally {
