@@ -23,7 +23,7 @@ const collection = ref<string>('');
 // Select image.
 const image = ref<MetaplexFile>();
 const imageSrc = ref<string>();
-const imagePrice = ref<number>();
+const imagePrice = ref<string>();
 const onFileChange = async (event: Event) => {
     const files = (event.target as HTMLInputElement).files
         || (event as InputEvent).dataTransfer?.files;
@@ -31,7 +31,7 @@ const onFileChange = async (event: Event) => {
     image.value = await MetaplexFile.fromFile(files[0]);
     imageSrc.value = URL.createObjectURL(files[0]);
     const price = await metaplex.value.storage().getPrice(image.value);
-    imagePrice.value = price.toNumber() / LAMPORTS_PER_SOL;
+    imagePrice.value = price.toSol();
     name.value = image.value.displayName;
 };
 
