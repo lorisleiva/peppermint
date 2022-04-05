@@ -40,6 +40,7 @@ const onFileChange = async (event: Event) => {
 const nft = ref<Nft | null>(null);
 const plan = ref<Plan<undefined, Nft> | null>(null);
 const loading = computed(() => plan.value ? plan.value.executing : false);
+const planFailed = ref(false);
 const onCreateNft = async () => {
     if (!image.value || loading.value) return;
     try {
@@ -68,9 +69,22 @@ const onCreateNft = async () => {
 
         nft.value = await plan.value.execute();
     } catch (e) {
-        console.log(e);
-        // TODO: Use onError() on step.
+        planFailed.value = true;
+        throw e;
     }
+}
+
+// Reset.
+const reset = () => {
+    image.value = undefined;
+    imageSrc.value = undefined;
+    imagePrice.value = undefined;
+    name.value = '';
+    description.value = '';
+    collection.value = '';
+    nft.value = null;
+    plan.value = null;
+    planFailed.value = false;
 }
 </script>
 
@@ -122,7 +136,27 @@ const onCreateNft = async () => {
                 </button>
             </div>
             <div v-else class="flex-1 p-8">
-                <ui-plan :plan="(plan as Plan<any, any>)"></ui-plan>
+                <div v-if="!planFailed">
+                    <h1 class="text-xl text-gray-300 mb-4">
+                        Minting in process...
+                    </h1>
+                    <p class="text-sm text-gray-300 font-sans">
+                        Your wallet will ask you to approve a series of transaction.
+                        You will need to review and approve each one.
+                    </p>
+                </div>
+                <div v-else>
+                    <h1 class="text-xl text-gray-300 mb-4">
+                        Minting failed
+                    </h1>
+                    <p class="text-sm text-gray-300 font-sans mb-4">
+                        Something went wrong while minting your NFT.
+                    </p>
+                    <button @click="plan = null; planFailed = false" class="block w-full px-4 py-2 text-center text-semibold bg-gradient-to-br from-indigo-700 to-blue-600 rounded border-b-2 border-transparent focus:outline-none focus:border-white hover:border-white hover:text-white">
+                        Try again
+                    </button>
+                </div>
+                <ui-plan class="mt-8" :plan="(plan as Plan<any, any>)"></ui-plan>
             </div>
         </div>
 
@@ -135,6 +169,14 @@ const onCreateNft = async () => {
                 </div>
             </div>
             <div class="flex-1 p-8 space-y-8">
+                <div>
+                    <h1 class="text-xl text-gray-300 mb-4">
+                        Minting successful
+                    </h1>
+                    <p class="text-sm text-gray-300 font-sans">
+                        Your NFT was successfully minted! You can now view it in your wallet.
+                    </p>
+                </div>
                 <div>
                     <label class="text-xs text-indigo-200 uppercase font-medium tracking-widest">Mint address</label>
                     <p v-text="nft.mint"></p>
@@ -151,6 +193,9 @@ const onCreateNft = async () => {
                     <label class="text-xs text-indigo-200 uppercase font-medium tracking-widest">Collection</label>
                     <p v-text="nft.metadata?.collection?.name"></p>
                 </div>
+                <button @click="reset" class="block w-full px-4 py-2 text-center text-semibold bg-gradient-to-br from-indigo-700 to-blue-600 rounded border-b-2 border-transparent focus:outline-none focus:border-white hover:border-white hover:text-white">
+                    Mint another NFT
+                </button>
             </div>
         </div>
     </div>
