@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.1.1",
+    "@types/bn.js": "^5.1.0",
     "@types/keccak": "^3.0.1",
     "@types/readable-stream": "^2.3.13",
     "@vitejs/plugin-vue": "^2.2.0",
