@@ -2,11 +2,12 @@
 import { computed, ref } from 'vue';
 import { Metaplex, walletOrGuestIdentity, MetaplexFile, bundlrStorage, Nft } from '@metaplex-foundation/js-next';
 import { useWallet } from 'solana-wallets-vue';
+import { Connection } from '@solana/web3.js';
 
 // Initialize workspace.
-const endpoint = 'https://metaplex.devnet.rpcpool.com';
+const connection = new Connection('https://metaplex.devnet.rpcpool.com');
 const { wallet } = useWallet();
-const metaplex = computed(() => Metaplex.make(endpoint)
+const metaplex = computed(() => Metaplex.make(connection)
     .use(walletOrGuestIdentity(wallet.value))
     .use(bundlrStorage({
         address: 'https://devnet.bundlr.network',
