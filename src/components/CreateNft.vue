@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, Ref, ref } from 'vue';
 import { Metaplex, walletOrGuestIdentity, MetaplexFile, bundlrStorage, Nft, Plan } from '@metaplex-foundation/js-next';
 import { useWallet } from 'solana-wallets-vue';
 import { Connection } from '@solana/web3.js';
@@ -38,40 +38,30 @@ const onFileChange = async (event: Event) => {
 
 // Upload image and create NFT.
 const nft = ref<Nft | null>(null);
-const plan = ref<Plan<undefined, Nft> | null>(null);
-const loading = computed(() => plan.value ? plan.value.executing : false);
-const planFailed = ref(false);
+const plan: Ref<Plan<undefined, Nft> | null> = ref(null);
 const onCreateNft = async () => {
-    if (!image.value || loading.value) return;
-    try {
-        const uploadPlan = await metaplex.value.nfts().planUploadMetadata({
-            name: name.value,
-            description: description.value,
-            image: image.value,
-            collection: {
-                name: collection.value,
-                family: collection.value,
-            },
-        });
+    if (!image.value || plan.value) return;
+    const uploadPlan = await metaplex.value.nfts().planUploadMetadata({
+        name: name.value,
+        description: description.value,
+        image: image.value,
+        collection: {
+            name: collection.value,
+            family: collection.value,
+        },
+    });
 
-        plan.value = uploadPlan
-            .addStep({
-                name: 'Create the NFT',
-                handler: async ({ uri }) => {
-                    const result = await metaplex.value.nfts().createNft({
-                        uri,
-                        name: name.value,
-                    });
-
-                    return result.nft;
-                },
+    plan.value = uploadPlan
+        .addStep('Create the NFT', async ({ uri }) => {
+            const result = await metaplex.value.nfts().createNft({
+                uri,
+                name: name.value,
             });
 
-        nft.value = await plan.value.execute();
-    } catch (e) {
-        planFailed.value = true;
-        throw e;
-    }
+            return result.nft;
+        });
+
+    nft.value = await plan.value.execute();
 }
 
 // Reset.
@@ -84,7 +74,6 @@ const reset = () => {
     collection.value = '';
     nft.value = null;
     plan.value = null;
-    planFailed.value = false;
 }
 </script>
 
@@ -131,12 +120,12 @@ const reset = () => {
                     <label for="nft-collection" class="text-xs text-indigo-200 uppercase font-medium tracking-widest">Collection</label>
                     <input v-model="collection" id="nft-collection" type="text" class="block w-full bg-indigo-900/50 rounded px-4 py-2 text-xl font-bold border-b-2 border-transparent focus:outline-none focus:border-white focus:text-white">
                 </div>
-                <button @click="onCreateNft" :disabled="loading" class="block w-full px-4 py-2 text-center text-semibold bg-gradient-to-br from-indigo-700 to-blue-600 rounded border-b-2 border-transparent focus:outline-none focus:border-white hover:border-white hover:text-white">
+                <button @click="onCreateNft" :disabled="!!plan" class="block w-full px-4 py-2 text-center text-semibold bg-gradient-to-br from-indigo-700 to-blue-600 rounded border-b-2 border-transparent focus:outline-none focus:border-white hover:border-white hover:text-white">
                     Create NFT
                 </button>
             </div>
             <div v-else class="flex-1 p-8">
-                <div v-if="!planFailed">
+                <div v-if="!plan.failed">
                     <h1 class="text-xl text-gray-300 mb-4">
                         Minting in process...
                     </h1>
@@ -152,11 +141,11 @@ const reset = () => {
                     <p class="text-sm text-gray-300 font-sans mb-4">
                         Something went wrong while minting your NFT.
                     </p>
-                    <button @click="plan = null; planFailed = false" class="block w-full px-4 py-2 text-center text-semibold bg-gradient-to-br from-indigo-700 to-blue-600 rounded border-b-2 border-transparent focus:outline-none focus:border-white hover:border-white hover:text-white">
+                    <button @click="plan = null" class="block w-full px-4 py-2 text-center text-semibold bg-gradient-to-br from-indigo-700 to-blue-600 rounded border-b-2 border-transparent focus:outline-none focus:border-white hover:border-white hover:text-white">
                         Try again
                     </button>
                 </div>
-                <ui-plan class="mt-8" :plan="(plan as Plan<any, any>)"></ui-plan>
+                <ui-plan class="mt-8" :plan="plan"></ui-plan>
             </div>
         </div>
 

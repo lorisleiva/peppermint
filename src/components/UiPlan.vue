@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Plan } from '@metaplex-foundation/js-next';
+import { Plan, Step } from '@metaplex-foundation/js-next';
 import { toRefs, watchEffect, ref } from 'vue';
 import UiStep from './UiStep.vue';
 
@@ -8,11 +8,11 @@ const props = defineProps<{
 }>()
 
 const { plan } = toRefs(props);
-const steps = ref<Plan<any, any>['steps']>([]);
+const steps = ref<Step[]>([]);
 watchEffect(() => {
     if (!plan.value) return;
-    plan.value.onChange(() => {
-        steps.value = plan.value.getVisibleSteps();
+    plan.value.onChange((_step, plan) => {
+        steps.value = plan.getVisibleSteps();
     });
 })
 </script>
