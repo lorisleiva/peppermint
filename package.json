@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@bundlr-network/client": "0.7.1",
-    "@metaplex-foundation/js-next": "^0.7.0",
+    "@metaplex-foundation/js-next": "^0.7.1",
     "@solana/wallet-adapter-wallets": "^0.15.5",
     "@solana/web3.js": "^1.36.0",
     "solana-wallets-vue": "^0.3.2",
