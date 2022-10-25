@@ -1,20 +1,26 @@
 <script setup lang="ts">
 import { computed, Ref, ref } from 'vue';
-import { Metaplex, walletOrGuestIdentity, MetaplexFile, bundlrStorage, Nft, Plan } from '@metaplex-foundation/js-next';
-import { useWallet } from 'solana-wallets-vue';
-import { Connection } from '@solana/web3.js';
+import { Metaplex, MetaplexFile, bundlrStorage, Nft, walletAdapterIdentity, toMetaplexFileFromBrowser, formatAmount, Task, NftWithToken } from '@metaplex-foundation/js';
+import { useAnchorWallet } from 'solana-wallets-vue';
+import { Connection, PublicKey } from '@solana/web3.js';
 import UiPlan from './UiPlan.vue';
 
 // Initialize workspace.
 const connection = new Connection('https://metaplex.devnet.rpcpool.com');
-const { wallet } = useWallet();
-const metaplex = computed(() => Metaplex.make(connection)
-    .use(walletOrGuestIdentity(wallet.value))
-    .use(bundlrStorage({
-        address: 'https://devnet.bundlr.network',
-        timeout: 60000,
-    }))
-);
+const wallet = useAnchorWallet();
+const metaplex = computed(() => { 
+    if (!wallet.value) throw new Error('Wallet not connected.');
+    return Metaplex.make(connection)
+        .use(walletAdapterIdentity(wallet.value))
+        .use(bundlrStorage({
+            address: 'https://devnet.bundlr.network',
+            timeout: 60000,
+        }))
+});
+
+metaplex.value.nfts()
+    .findByMint({ mintAddress: new PublicKey('3ijFZcJKmp1EnDbbuaumWYvEFbztx9NRupwTXTchK9bP') })
+    .then(console.log);
 
 // Inputs.
 const name = ref<string>('');
@@ -29,39 +35,49 @@ const onFileChange = async (event: Event) => {
     const files = (event.target as HTMLInputElement).files
         || (event as InputEvent).dataTransfer?.files;
     if (!files?.length) return;
-    image.value = await MetaplexFile.fromFile(files[0]);
+    image.value = await toMetaplexFileFromBrowser(files[0]);
     imageSrc.value = URL.createObjectURL(files[0]);
-    const price = await metaplex.value.storage().getPrice(image.value);
-    imagePrice.value = price.toSol();
+    const price = await metaplex.value.storage().getUploadPriceForFile(image.value);
+    imagePrice.value = formatAmount(price);
     name.value = image.value.displayName;
 };
 
 // Upload image and create NFT.
 const nft = ref<Nft | null>(null);
-const plan: Ref<Plan<undefined, Nft> | null> = ref(null);
+const task: Ref<Task<Nft> | null> = ref(null);
 const onCreateNft = async () => {
-    if (!image.value || plan.value) return;
-    const uploadPlan = await metaplex.value.nfts().planUploadMetadata({
-        name: name.value,
-        description: description.value,
-        image: image.value,
-        collection: {
-            name: collection.value,
-            family: collection.value,
-        },
-    });
+    if (!image.value || task.value) return;
 
-    plan.value = uploadPlan
-        .addStep('Create the NFT', async ({ uri }) => {
-            const result = await metaplex.value.nfts().createNft({
-                uri,
-                name: name.value,
-            });
-
-            return result.nft;
+    const uploadTask = new Task(async () => {
+        const { uri } = await metaplex.value.nfts().uploadMetadata({
+            name: name.value,
+            description: description.value,
+            image: image.value,
+            collection: {
+                name: collection.value,
+                family: collection.value,
+            },
         });
+        return uri;
+    });
+    uploadTask.setContext({ name: 'Upload Assets' });
 
-    nft.value = await plan.value.execute();
+    const createTask = new Task<NftWithToken, [string]>(async (scope, uri) => {
+        const { nft } = await metaplex.value.nfts().create({
+            uri,
+            name: name.value,
+            sellerFeeBasisPoints: 0,
+        });
+        return nft;
+    });
+    createTask.setContext({ name: 'Create NFT' });
+
+    task.value = new Task(async (scope) => {
+        const uri = await uploadTask.run(scope);
+        return createTask.run(scope, uri);
+    }, [uploadTask, createTask]);
+
+    nft.value = await task.value.run();
 }
 
 // Reset.
@@ -73,7 +89,7 @@ const reset = () => {
     description.value = '';
     collection.value = '';
     nft.value = null;
-    plan.value = null;
+    task.value = null;
 }
 </script>
 
@@ -107,7 +123,7 @@ const reset = () => {
                     <span class="font-sans">◎</span> {{ imagePrice }}
                 </div>
             </div>
-            <div v-if="!plan" class="flex-1 p-8 space-y-8">
+            <div v-if="!task" class="flex-1 p-8 space-y-8">
                 <div>
                     <label for="nft-name" class="text-xs text-indigo-200 uppercase font-medium tracking-widest">Name</label>
                     <input v-model="name" id="nft-name" type="text" class="block w-full bg-indigo-900/50 rounded px-4 py-2 text-xl font-bold border-b-2 border-transparent focus:outline-none focus:border-white focus:text-white">
@@ -120,12 +136,12 @@ const reset = () => {
                     <label for="nft-collection" class="text-xs text-indigo-200 uppercase font-medium tracking-widest">Collection</label>
                     <input v-model="collection" id="nft-collection" type="text" class="block w-full bg-indigo-900/50 rounded px-4 py-2 text-xl font-bold border-b-2 border-transparent focus:outline-none focus:border-white focus:text-white">
                 </div>
-                <button @click="onCreateNft" :disabled="!!plan" class="block w-full px-4 py-2 text-center text-semibold bg-gradient-to-br from-indigo-700 to-blue-600 rounded border-b-2 border-transparent focus:outline-none focus:border-white hover:border-white hover:text-white">
+                <button @click="onCreateNft" :disabled="!!task" class="block w-full px-4 py-2 text-center text-semibold bg-gradient-to-br from-indigo-700 to-blue-600 rounded border-b-2 border-transparent focus:outline-none focus:border-white hover:border-white hover:text-white">
                     Create NFT
                 </button>
             </div>
             <div v-else class="flex-1 p-8">
-                <div v-if="!plan.failed">
+                <div v-if="!task.isFailed()">
                     <h1 class="text-xl text-gray-300 mb-4">
                         Minting in process...
                     </h1>
@@ -141,18 +157,18 @@ const reset = () => {
                     <p class="text-sm text-gray-300 font-sans mb-4">
                         Something went wrong while minting your NFT.
                     </p>
-                    <button @click="plan = null" class="block w-full px-4 py-2 text-center text-semibold bg-gradient-to-br from-indigo-700 to-blue-600 rounded border-b-2 border-transparent focus:outline-none focus:border-white hover:border-white hover:text-white">
+                    <button @click="task = null" class="block w-full px-4 py-2 text-center text-semibold bg-gradient-to-br from-indigo-700 to-blue-600 rounded border-b-2 border-transparent focus:outline-none focus:border-white hover:border-white hover:text-white">
                         Try again
                     </button>
                 </div>
-                <ui-plan class="mt-8" :plan="plan"></ui-plan>
+                <ui-plan class="mt-8" :task="task"></ui-plan>
             </div>
         </div>
 
         <!-- Step 4: Minting was successful. -->
         <div v-else class="flex">
             <div class="relative w-2/5">
-                <img :src="nft.metadata?.image" :alt="nft.metadata?.name" class="object-cover w-full h-full rounded-l-2xl border-r border-indigo-500">
+                <img :src="nft.json?.image" :alt="nft.json?.name" class="object-cover w-full h-full rounded-l-2xl border-r border-indigo-500">
                 <div class="absolute bottom-4 right-4 rounded px-2 py-1 bg-white/80 backdrop-blur shadow text-xs text-green-700">
                     <span class="font-sans text-green-600 font-bold">✓</span> Minted
                 </div>
@@ -176,11 +192,11 @@ const reset = () => {
                 </div>
                 <div>
                     <label class="text-xs text-indigo-200 uppercase font-medium tracking-widest">Description</label>
-                    <p v-text="nft.metadata?.description"></p>
+                    <p v-text="nft.json?.description"></p>
                 </div>
                 <div>
                     <label class="text-xs text-indigo-200 uppercase font-medium tracking-widest">Collection</label>
-                    <p v-text="nft.metadata?.collection?.name"></p>
+                    <p v-text="nft.json?.collection?.name"></p>
                 </div>
                 <button @click="reset" class="block w-full px-4 py-2 text-center text-semibold bg-gradient-to-br from-indigo-700 to-blue-600 rounded border-b-2 border-transparent focus:outline-none focus:border-white hover:border-white hover:text-white">
                     Mint another NFT

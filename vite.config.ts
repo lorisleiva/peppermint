@@ -11,12 +11,12 @@ export default defineConfig({
     alias: {
       stream: 'rollup-plugin-node-polyfills/polyfills/stream',
       crypto: 'crypto-browserify',
+      http: 'https-browserify',
+      url: 'url',
     },
     dedupe: [
       '@bundlr-network/client',
       '@metaplex-foundation/beet',
-      'tweetnacl',
-      'brorand',
       'bn.js',
     ],
   },
