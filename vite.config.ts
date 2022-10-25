@@ -18,6 +18,7 @@ export default defineConfig({
       '@bundlr-network/client',
       '@metaplex-foundation/beet',
       'bn.js',
+      'vue',
     ],
   },
   define: {
