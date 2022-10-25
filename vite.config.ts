@@ -12,6 +12,7 @@ export default defineConfig({
       stream: 'rollup-plugin-node-polyfills/polyfills/stream',
       crypto: 'crypto-browserify',
       http: 'https-browserify',
+      https: 'https-browserify',
       url: 'url',
     },
     dedupe: [

@@ -8,19 +8,15 @@ import UiPlan from './UiPlan.vue';
 // Initialize workspace.
 const connection = new Connection('https://metaplex.devnet.rpcpool.com');
 const wallet = useAnchorWallet();
-const metaplex = computed(() => { 
-    if (!wallet.value) throw new Error('Wallet not connected.');
-    return Metaplex.make(connection)
-        .use(walletAdapterIdentity(wallet.value))
+const metaplex = computed(() => {
+    const mx = Metaplex.make(connection)
         .use(bundlrStorage({
             address: 'https://devnet.bundlr.network',
             timeout: 60000,
-        }))
+        }));
+    if (wallet.value) mx.use(walletAdapterIdentity(wallet.value));
+    return mx;
 });
-
-metaplex.value.nfts()
-    .findByMint({ mintAddress: new PublicKey('3ijFZcJKmp1EnDbbuaumWYvEFbztx9NRupwTXTchK9bP') })
-    .then(console.log);
 
 // Inputs.
 const name = ref<string>('');
